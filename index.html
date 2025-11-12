@@ -1944,12 +1944,12 @@
         // SECTION VISIBILITY ANIMATION
         // ==========================================
         const sections = document.querySelectorAll('.section');
-
+        
         const observerOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -100px 0px'
+            threshold: 0.05,  // SAFARI FIX: Lower threshold
+            rootMargin: '0px'  // SAFARI FIX: Remove negative margin
         };
-
+        
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1957,11 +1957,43 @@
                 }
             });
         }, observerOptions);
-
+        
         sections.forEach(section => {
             if (!section.classList.contains('visible')) {
                 observer.observe(section);
             }
+        });
+        
+        // SAFARI FIX: Scroll event fallback
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                sections.forEach(section => {
+                    if (!section.classList.contains('visible')) {
+                        const rect = section.getBoundingClientRect();
+                        const windowHeight = window.innerHeight;
+                        if (rect.top < windowHeight * 0.85) {
+                            section.classList.add('visible');
+                        }
+                    }
+                });
+            }, 100);
+        }, { passive: true });
+        
+        // SAFARI FIX: Check on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                sections.forEach(section => {
+                    if (!section.classList.contains('visible')) {
+                        const rect = section.getBoundingClientRect();
+                        const windowHeight = window.innerHeight;
+                        if (rect.top < windowHeight * 0.85) {
+                            section.classList.add('visible');
+                        }
+                    }
+                });
+            }, 100);
         });
 
         // ==========================================
